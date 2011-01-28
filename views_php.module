@@ -1,0 +1,42 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Allows to use PHP in views.
+ */
+
+/**
+ * Implements hook_views_api().
+ */
+function views_php_views_api() {
+  return array(
+    'api' => 3,
+  );
+}
+
+/**
+ * Implements hook_views_pre_execute().
+ */
+function views_php_views_pre_execute($view) {
+  foreach (array(/*'argument',*/ 'field', 'sort', 'filter', /*'relationship'*/) as $type) {
+    foreach ($view->$type as $id => $handler) {
+      if (is_callable(array($handler, 'php_pre_execute'))) {
+        $handler->php_pre_execute();
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_views_post_execute().
+ */
+function views_php_views_post_execute($view) {
+  foreach (array(/*'argument',*/ 'field', 'sort', 'filter', /*'relationship'*/) as $type) {
+    foreach ($view->$type as $id => $handler) {
+      if (is_callable(array($handler, 'php_post_execute'))) {
+        $handler->php_post_execute();
+      }
+    }
+  }
+}
