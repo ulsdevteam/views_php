@@ -8,22 +8,13 @@
  */
 class views_php_handler_field extends views_handler_field {
 
-  /**
-   * Only let users with use PHP permissions set/modify this handler.
-   */
-  function php_check_access(&$element) {
-    if (!user_access('use PHP for settings')) {
-      $element['#disabled'] = TRUE;
-      $element['#value'] = $element['#default_value'];
-      $element['#description'] .= ' <strong>' . t('Note: you do not have permission to modify this.') . '</strong>';
-    }
-  }
 
   /**
    * Implements views_object#option_definition().
    */
   function option_definition() {
     $options = parent::option_definition();
+    $options['use_php_static'] = array('default' => FALSE);
     $options['php_static'] = array('default' => '');
     $options['php_value'] = array('default' => '');
     $options['php_output'] = array('default' => '');
@@ -37,31 +28,55 @@ class views_php_handler_field extends views_handler_field {
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
 
+    $form['use_php_static'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Use static PHP code'),
+      '#description' => t('If checked, you can provide PHP code to be run once right before execution of the view. This may be useful to define functions to be re-used in the value and/or output code.'),
+      '#default_value' => $this->options['use_php_static'] && !empty($this->options['php_static']),
+    );
     $form['php_static'] = array(
       '#type' => 'textarea',
       '#title' => t('Static code'),
       '#default_value' => $this->options['php_static'],
       '#rows' => 5,
       '#description' =>
-        t('Code to run right before execution of the view. May be useful to define functions to be re-used in the value and/or output code.') . ' <strong>' . t('Do not include &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
+        t('Code to run right before execution of the view.') . ' <strong>' . t('Do not use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
         t('Available variables:') . '<br/>' .
         t('$static: can be used to store reusable data per row.')
       ,
+      '#states' => array(
+        'invisible' => array(
+          'input[name="options[use_php_static]"]' => array('checked' => FALSE),
+        ),
+      ),
     );
-    $this->php_check_access($form['php_static']);
+    views_php_check_access($form['php_static']);
     $form['php_value'] = array(
       '#type' => 'textarea',
       '#title' => t('Value code'),
       '#default_value' => $this->options['php_value'],
       '#rows' => 5,
       '#description' =>
-        t('Code to construct the value of this field.') . ' <strong>' . t('Do not include &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
+        t('Code to construct the value of this field.') . ' <strong>' . t('Do not use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
         t('Available variables:') . '<br/>' .
         t('$data: contains the retrieved record from the database (e.g. $data->nid).') . '<br/>' .
         t('$static: can be used to store reusable data per row.')
       ,
     );
-    $this->php_check_access($form['php_value']);
+    views_php_check_access($form['php_value']);
+    $form['php_output'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Output code'),
+      '#default_value' => $this->options['php_output'],
+      '#rows' => 5,
+      '#description' =>
+        t('Code to construct the output of this field.') . ' <strong>' . t('Use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
+        t('Available variables:') . '<br/>' .
+        t('$data: contains the retrieved record from the database (e.g. $data->nid).') . '<br/>' .
+        t('$static: can be used to store reusable data per row.')
+      ,
+    );
+    views_php_check_access($form['php_output']);
   }
 
   /**
@@ -95,7 +110,10 @@ class views_php_handler_field extends views_handler_field {
   function php_pre_execute() {
     // Ecexute static PHP code.
     if (!empty($this->options['php_static'])) {
-      $this->php_static(&$this->php_static_variable);
+      $lamda_function = create_function('$view, $handler, &$static', $this->options['php_static']);
+      ob_start();
+      $lamda_function($this->view, $this, &$this->php_static_variable);
+      ob_end_clean();
     }
 
     // If we're sorting, save the original pager and let Views get all results.
@@ -111,13 +129,21 @@ class views_php_handler_field extends views_handler_field {
    */
   function php_post_execute() {
     // Ecexute value PHP code.
-    foreach ($this->view->result as $i => $row) {
-      $this->view->result[$i]->{$this->field_alias} = $this->php_value($row, $this->php_static_variable);
+    if (!empty($this->options['php_value'])) {
+      $lamda_function = create_function('$view, $handler, &$static, $data', $this->options['php_value']);
+      ob_start();
+      foreach ($this->view->result as $i => &$row) {
+        $row->{$this->field_alias} = $lamda_function($this->view, $this, $this->php_static_variable, $row);
+      }
+      ob_end_clean();
     }
 
     // If we're sorting, do the actual sorting then fix the results as per the pager info.
     if (!empty($this->options['php_click_sortable']) && !empty($this->php_click_sort_order)) {
-      usort($this->view->result, array($this, 'php_click_sort'));
+      $lamda_function = create_function('$row1, $row2', $this->options['php_click_sortable']);
+      ob_start();
+      usort($this->view->result, $lamda_function);
+      ob_end_clean();
 
       // Handle paging logic as in view::execute()
       if (!empty($this->pager['items_per_page'])) {
@@ -158,27 +184,28 @@ class views_php_handler_field extends views_handler_field {
   }
 
   /**
-   *
+   * Implements views_handler_field#pre_render().
    */
-  function php_static(&$static) {
-    ob_start();
-    eval($this->options['php_static']);
-    return ob_get_clean();
+  function pre_render(&$values) {
+    if (!empty($this->options['php_output'])) {
+      $this->php_output_lamda_function = create_function('$view, &$static, $data, $value', ' ?> ' . $this->options['php_output'] . ' <?php ');
+    }
   }
 
   /**
-   *
+   * Implements views_handler_field#render().
    */
-  function php_value($data, &$static) {
-    ob_start();
-    print eval('?>'. $this->options['php_value']);
-    return ob_get_clean();
-  }
-
-  /**
-   *
-   */
-  function php_click_sort($row1, $row2) {
-
+  function render($values) {
+    // Ecexute output PHP code.
+    if (!empty($this->options['php_output']) && isset($this->php_output_function)) {
+      $lamda_function = $this->php_output_function;
+      ob_start();
+      $lamda_function($view, &$this->php_static_variable, $values, isset($values->{$this->field_alias}) ? $values->{$this->field_alias} : NULL);
+      $value = ob_get_clean();
+    }
+    else {
+      $value = check_plain($values->{$this->field_alias});
+    }
+    return $value;
   }
 }

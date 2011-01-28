@@ -16,6 +16,17 @@ function views_php_views_api() {
 }
 
 /**
+ * Helper function; only users with use PHP permission can provide input for given element.
+ */
+function views_php_check_access(&$element) {
+  if (!user_access('use PHP for settings')) {
+    $element['#disabled'] = TRUE;
+    $element['#value'] = $element['#default_value'];
+    $element['#description'] .= ' <strong>' . t('Note: you do not have permission to modify this.') . '</strong>';
+  }
+}
+
+/**
  * Implements hook_views_pre_execute().
  */
 function views_php_views_pre_execute($view) {
