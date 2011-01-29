@@ -82,7 +82,7 @@ class views_php_handler_sort extends views_handler_sort {
    * @see views_php_views_post_execute()
    */
   function php_post_execute() {
-    if (!empty($this->options['php_sort'])) {
+    if (!empty($this->options['php_sort']) && $this->view->style_plugin->build_sort()) {
       $lamda_function = create_function('$row1, $row2', $this->options['php_sort']);
       ob_start();
       usort($this->view->result, $lamda_function);

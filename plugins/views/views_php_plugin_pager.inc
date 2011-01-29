@@ -44,4 +44,8 @@ class views_php_plugin_pager extends views_php_plugin_wrapper  {
     $this->wrapped->post_execute($result);
   }
 
+
+  function execute_count_query(&$count_query) {
+    $this->wrapped->execute_count_query($count_query);
+  }
 }

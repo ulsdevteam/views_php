@@ -24,7 +24,7 @@ class views_php_plugin_wrapper {
     unset($this->wrapped_link);
   }
 
-  public function __get($name) {
+  public function &__get($name) {
     return $this->wrapped->$name;
   }
 
