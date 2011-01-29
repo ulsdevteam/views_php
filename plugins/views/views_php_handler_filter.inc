@@ -20,7 +20,7 @@ class views_php_handler_filter extends views_handler_filter {
    */
   function option_definition() {
     $options = parent::option_definition();
-    $options['php_static'] = array('default' => '');
+    $options['php_setup'] = array('default' => '');
     $options['php_filter'] = array('default' => '');
     return $options;
   }
@@ -31,10 +31,10 @@ class views_php_handler_filter extends views_handler_filter {
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
 
-    $form['php_static'] = array(
+    $form['php_setup'] = array(
       '#type' => 'textarea',
-      '#title' => t('Static code'),
-      '#default_value' => $this->options['php_static'],
+      '#title' => t('Setup code'),
+      '#default_value' => $this->options['php_setup'],
       '#rows' => 5,
       '#description' =>
         t('Code to run right before execution of the view. May be useful to define functions to be re-used in the value and/or output code.') . ' <strong>' . t('Do not include &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
@@ -42,7 +42,7 @@ class views_php_handler_filter extends views_handler_filter {
         t('$static: can be used to store reusable data per row.')
       ,
     );
-    views_php_check_access($form['php_static']);
+    views_php_check_access($form['php_setup']);
     $form['php_filter'] = array(
       '#type' => 'textarea',
       '#title' => t('Filter code'),
@@ -73,8 +73,8 @@ class views_php_handler_filter extends views_handler_filter {
    */
   function php_pre_execute() {
     // Ecexute static PHP code.
-    if (!empty($this->options['php_static'])) {
-      $lamda_function = create_function('$view, $handler, &$static', $this->options['php_static']);
+    if (!empty($this->options['php_setup'])) {
+      $lamda_function = create_function('$view, $handler, &$static', $this->options['php_setup']);
       ob_start();
       $lamda_function($this->view, $this, &$this->php_static_variable);
       ob_end_clean();

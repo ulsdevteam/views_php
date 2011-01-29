@@ -14,7 +14,7 @@ class views_php_handler_area extends views_handler_area {
   function option_definition() {
     $options = parent::option_definition();
 
-    $options['php_output'] = array('default' => '');
+    $options['php_output'] = array('default' => "<h4>Example PHP code</h4>\n<p>Time: <?php print date('H:i', time());?></p>\n");
     return $options;
   }
 
@@ -46,9 +46,9 @@ class views_php_handler_area extends views_handler_area {
   function render($empty = FALSE) {
     // Ecexute output PHP code.
     if ((!$empty || !empty($this->options['empty'])) && !empty($this->options['php_output'])) {
-      $lamda_function = create_function('$view, $handler, &$static', ' ?> ' . $this->options['php_output'] . ' <?php ');
+      $lamda_function = create_function('$view, $handler, &$static, $results', ' ?> ' . $this->options['php_output'] . ' <?php ');
       ob_start();
-      $lamda_function($this->view, $this, &$this->php_static_variable);
+      $lamda_function($this->view, $this, &$this->php_static_variable, $this->view->result);
       return ob_get_clean();
     }
     return '';

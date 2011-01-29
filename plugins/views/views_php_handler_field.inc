@@ -14,8 +14,8 @@ class views_php_handler_field extends views_handler_field {
    */
   function option_definition() {
     $options = parent::option_definition();
-    $options['use_php_static'] = array('default' => FALSE);
-    $options['php_static'] = array('default' => '');
+    $options['use_php_setup'] = array('default' => FALSE);
+    $options['php_setup'] = array('default' => '');
     $options['php_value'] = array('default' => '');
     $options['php_output'] = array('default' => '');
     $options['php_click_sortable'] = array('default' => FALSE);
@@ -28,16 +28,16 @@ class views_php_handler_field extends views_handler_field {
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
 
-    $form['use_php_static'] = array(
+    $form['use_php_setup'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Use static PHP code'),
+      '#title' => t('Use setup PHP code'),
       '#description' => t('If checked, you can provide PHP code to be run once right before execution of the view. This may be useful to define functions to be re-used in the value and/or output code.'),
-      '#default_value' => $this->options['use_php_static'] && !empty($this->options['php_static']),
+      '#default_value' => $this->options['use_php_setup'] && !empty($this->options['php_setup']),
     );
-    $form['php_static'] = array(
+    $form['php_setup'] = array(
       '#type' => 'textarea',
-      '#title' => t('Static code'),
-      '#default_value' => $this->options['php_static'],
+      '#title' => t('Setup code'),
+      '#default_value' => $this->options['php_setup'],
       '#rows' => 5,
       '#description' =>
         t('Code to run right before execution of the view.') . ' <strong>' . t('Do not use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
@@ -46,11 +46,11 @@ class views_php_handler_field extends views_handler_field {
       ,
       '#states' => array(
         'invisible' => array(
-          'input[name="options[use_php_static]"]' => array('checked' => FALSE),
+          'input[name="options[use_php_setup]"]' => array('checked' => FALSE),
         ),
       ),
     );
-    views_php_check_access($form['php_static']);
+    views_php_check_access($form['php_setup']);
     $form['php_value'] = array(
       '#type' => 'textarea',
       '#title' => t('Value code'),
@@ -114,8 +114,8 @@ class views_php_handler_field extends views_handler_field {
    */
   function php_pre_execute() {
     // Ecexute static PHP code.
-    if (!empty($this->options['php_static'])) {
-      $lamda_function = create_function('$view, $handler, &$static', $this->options['php_static']);
+    if (!empty($this->options['php_setup'])) {
+      $lamda_function = create_function('$view, $handler, &$static', $this->options['php_setup']);
       ob_start();
       $lamda_function($this->view, $this, &$this->php_static_variable);
       ob_end_clean();
