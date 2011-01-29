@@ -14,7 +14,7 @@ class views_php_handler_area extends views_handler_area {
   function option_definition() {
     $options = parent::option_definition();
 
-    $options['phpcode'] = array('default' => '');
+    $options['php_output'] = array('default' => '');
     return $options;
   }
 
@@ -24,19 +24,33 @@ class views_php_handler_area extends views_handler_area {
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
 
-    $form['phpcode'] = array(
+    $form['php_output'] = array(
       '#type' => 'textarea',
-      '#title' => t('PHP code'),
-      '#default_value' => $this->options['phpcode'],
+      '#title' => t('Output code'),
+      '#default_value' => $this->options['php_output'],
       '#rows' => 5,
       '#description' =>
-        t('The text that should be displayed.')
-        .' '.t('Include &lt;?php ?&gt; delimiters when using PHP code.')
-        .' '.t('Available variables:').'<br/>'
-        .t('$data: contains the retrieved record from the database (e.g. $data->nid).').'<br/>'
-        .t('$static: can be used to store reusable data per row.')
+        t('Code to construct the output of this field.') . ' <strong>' . t('Use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
+        t('Available variables:') . '<br/>' .
+        t('$data: contains the retrieved record from the database (e.g. $data->nid).') . '<br/>' .
+        t('$static: can be used to store reusable data per row.')
       ,
     );
-    views_php_check_access($form['phpcode']);
+    views_php_check_access($form['php_output']);
+  }
+
+
+  /**
+   * Implements views_handler_area#render().
+   */
+  function render($empty = FALSE) {
+    // Ecexute output PHP code.
+    if ((!$empty || !empty($this->options['empty'])) && !empty($this->options['php_output'])) {
+      $lamda_function = create_function('$view, $handler, &$static', ' ?> ' . $this->options['php_output'] . ' <?php ');
+      ob_start();
+      $lamda_function($this->view, $this, &$this->php_static_variable);
+      return ob_get_clean();
+    }
+    return '';
   }
 }
