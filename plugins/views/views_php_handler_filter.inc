@@ -9,6 +9,13 @@
 class views_php_handler_filter extends views_handler_filter {
 
   /**
+   * Implements views_object#admin_summary().
+   */
+  function admin_summary() {
+    return t('custom');
+  }
+
+  /**
    * Implements views_object#option_definition().
    */
   function option_definition() {
