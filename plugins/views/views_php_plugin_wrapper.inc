@@ -2,7 +2,7 @@
 // $Id$
 
 /**
- * A helper class that wraps around the actual pager.
+ * A helper class that wraps around the actual views plugin.
  *
  * @see views_php_plugin_query
  * @see views_php_plugin_pager
