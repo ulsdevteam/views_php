@@ -160,8 +160,8 @@ class views_php_handler_field extends views_handler_field {
    */
   function render($values) {
     // Ecexute output PHP code.
-    if (!empty($this->options['php_output']) && isset($this->php_output_function)) {
-      $lamda_function = $this->php_output_function;
+    if (!empty($this->options['php_output']) && isset($this->php_output_lamda_function)) {
+      $lamda_function = $this->php_output_lamda_function;
       ob_start();
       $lamda_function($view, &$this->php_static_variable, $values, isset($values->{$this->field_alias}) ? $values->{$this->field_alias} : NULL);
       $value = ob_get_clean();
