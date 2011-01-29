@@ -59,7 +59,8 @@ class views_php_handler_sort extends views_handler_sort {
    * Implements views_handler_sort#query().
    */
   function query() {
-    // do nothing -- to override the parent query.
+    // Inform views_php_views_pre_execute() to seize control over the query.
+    $this->view->views_php = TRUE;
   }
 
   /**

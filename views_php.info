@@ -12,3 +12,6 @@ files[] = plugins/views/views_php_handler_sort.inc
 ; Views plugins
 files[] = plugins/views/views_php_plugin_access.inc
 files[] = plugins/views/views_php_plugin_cache.inc
+files[] = plugins/views/views_php_plugin_pager.inc
+files[] = plugins/views/views_php_plugin_query.inc
+files[] = plugins/views/views_php_plugin_wrapper.inc

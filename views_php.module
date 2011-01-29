@@ -30,12 +30,9 @@ function views_php_check_access(&$element) {
  * Implements hook_views_pre_execute().
  */
 function views_php_views_pre_execute($view) {
-  foreach (array(/*'argument',*/ 'field', 'sort', 'filter', /*'relationship'*/) as $type) {
-    foreach ($view->$type as $id => $handler) {
-      if (is_callable(array($handler, 'php_pre_execute'))) {
-        $handler->php_pre_execute();
-      }
-    }
+  if (!empty($view->views_php)) {
+    $query = new views_php_plugin_query();
+    $query->php_wrap($view->query);
   }
 }
 
@@ -43,11 +40,7 @@ function views_php_views_pre_execute($view) {
  * Implements hook_views_post_execute().
  */
 function views_php_views_post_execute($view) {
-  foreach (array(/*'argument',*/ 'field', 'sort', 'filter', /*'relationship'*/) as $type) {
-    foreach ($view->$type as $id => $handler) {
-      if (is_callable(array($handler, 'php_post_execute'))) {
-        $handler->php_post_execute();
-      }
-    }
+  if ($view->query instanceof views_php_plugin_wrapper) {
+    $view->query->php_unwrap();
   }
 }

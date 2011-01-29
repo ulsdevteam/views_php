@@ -56,7 +56,8 @@ class views_php_handler_filter extends views_handler_filter {
    * Implements views_handler_filter#query().
    */
   function query() {
-    // do nothing -- to override the parent query.
+    // Inform views_php_views_pre_execute() to seize control over the query.
+    $this->view->views_php = TRUE;
   }
 
   /**

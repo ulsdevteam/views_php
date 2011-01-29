@@ -81,9 +81,14 @@ class views_php_handler_field extends views_handler_field {
 
   /**
    * Implements views_handler_field#query().
+   *
+   * @see views_php_views_pre_execute()
    */
   function query() {
+    // Provide an field alias but don't actually alter the query.
     $this->field_alias = 'views_php_' . $this->position;
+    // Inform views_php_views_pre_execute() to seize control over the query.
+    $this->view->views_php = TRUE;
   }
 
   /**
@@ -115,12 +120,6 @@ class views_php_handler_field extends views_handler_field {
       $lamda_function($this->view, $this, &$this->php_static_variable);
       ob_end_clean();
     }
-
-    // If we're sorting, save the original pager and let Views get all results.
-    if (!empty($this->options['php_click_sortable']) && !empty($this->php_click_sort_order)) {
-      $this->pager = $this->view->pager; // save the pager
-      $this->view->set_items_per_page(0);
-    }
   }
 
   /**
@@ -144,42 +143,6 @@ class views_php_handler_field extends views_handler_field {
       ob_start();
       usort($this->view->result, $lamda_function);
       ob_end_clean();
-
-      // Handle paging logic as in view::execute()
-      if (!empty($this->pager['items_per_page'])) {
-
-        if (!empty($this->pager['use_pager']) || !empty($this->view->get_total_rows)) {
-          $this->view->total_rows = count($this->view->result) - $this->pager['offset'];
-        }
-
-        if (!empty($this->pager['use_pager'])) {
-          // dump information about what we already know into the globals
-          global $pager_page_array, $pager_total, $pager_total_items;
-          // total rows in query
-          $pager_total_items[$this->pager['element']] = $this->view->total_rows;
-          // total pages
-          $pager_total[$this->pager['element']] = ceil($pager_total_items[$this->pager['element']] / $this->pager['items_per_page']);
-
-          // What page was requested
-          $pager_page_array = isset($_GET['page']) ? explode(',', $_GET['page']) : array();
-
-          // If the requested page was within range. $this->pager['current_page']
-          // defaults to 0 so we don't need to set it in an out-of-range condition.
-          if (!empty($pager_page_array[$this->pager['element']])) {
-            $page = intval($pager_page_array[$this->pager['element']]);
-            if ($page > 0 && $page < $pager_total[$this->pager['element']]) {
-              $this->pager['current_page'] = $page;
-            }
-          }
-          $pager_page_array[$this->pager['element']] = $this->pager['current_page'];
-        }
-
-        $offset = $this->pager['current_page'] * $this->pager['items_per_page'] + $this->pager['offset'];
-        $results = array_slice($this->view->result, $offset, $this->pager['items_per_page']);
-        $this->view->result = $results;
-      }
-
-      $this->view->pager = $this->pager;
     }
   }
 
