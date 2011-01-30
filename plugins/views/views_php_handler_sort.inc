@@ -2,7 +2,9 @@
 // $Id$
 
 /**
- * Handle a random sort.
+ * A handler to sort a view using PHP defined by the administrator.
+ *
+ * @ingroup views_sort_handlers
  */
 class views_php_handler_sort extends views_handler_sort {
 

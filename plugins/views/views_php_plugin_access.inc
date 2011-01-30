@@ -3,6 +3,8 @@
 
 /**
  * Access plugin that provides access control based on custom PHP code.
+ *
+ * @ingroup views_access_plugins
  */
 class views_php_plugin_access extends views_plugin_access {
 

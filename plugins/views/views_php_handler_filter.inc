@@ -2,7 +2,7 @@
 // $Id$
 
 /**
- * A handler to provide a field that is completely custom by the administrator.
+ * A handler to filter a view using PHP defined by the administrator.
  *
  * @ingroup views_filter_handlers
  */
@@ -12,7 +12,7 @@ class views_php_handler_filter extends views_handler_filter {
    * Implements views_object#admin_summary().
    */
   function admin_summary() {
-    return t('custom');
+    return t('PHP');
   }
 
   /**
