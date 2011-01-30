@@ -39,6 +39,8 @@ class views_php_handler_filter extends views_handler_filter {
       '#description' =>
         t('Code to run right before execution of the view. May be useful to define functions to be re-used in the value and/or output code.') . ' <strong>' . t('Do not include &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
         t('Available variables:') . '<br/>' .
+        t('$view: The view object.') . '<br/>' .
+        t('$handler: The handler object.') . '<br/>' .
         t('$static: can be used to store reusable data per row.')
       ,
     );
@@ -51,9 +53,11 @@ class views_php_handler_filter extends views_handler_filter {
       '#description' =>
         t('The text that should be displayed.')
         .' '.t('Include &lt;?php ?&gt; delimiters when using PHP code.')
-        .' '.t('Available variables:').'<br/>'
-        .t('$data: contains the retrieved record from the database (e.g. $data->nid).').'<br/>'
-        .t('$static: can be used to store reusable data per row.')
+        .' '.t('Available variables:') . '<br/>' .
+        t('$view: The view object.') . '<br/>' .
+        t('$handler: The handler object.') . '<br/>' .
+        t('$data: contains the retrieved record from the database (e.g. $data->nid).') . '<br/>' .
+        t('$static: can be used to store reusable data per row.')
       ,
     );
     views_php_check_access($form['php_filter']);

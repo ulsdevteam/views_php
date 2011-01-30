@@ -30,10 +30,11 @@ class views_php_handler_area extends views_handler_area {
       '#default_value' => $this->options['php_output'],
       '#rows' => 5,
       '#description' =>
-        t('Code to construct the output of this field.') . ' <strong>' . t('Use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
+        t('Code to construct the output of this area.') . ' <strong>' . t('Use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
         t('Available variables:') . '<br/>' .
-        t('$data: contains the retrieved record from the database (e.g. $data->nid).') . '<br/>' .
-        t('$static: can be used to store reusable data per row.')
+        t('$view: The view object.') . '<br/>' .
+        t('$handler: The handler object.') . '<br/>' .
+        t('$results: Array containing view\'s result set.')
       ,
     );
     views_php_check_access($form['php_output']);
@@ -46,9 +47,9 @@ class views_php_handler_area extends views_handler_area {
   function render($empty = FALSE) {
     // Ecexute output PHP code.
     if ((!$empty || !empty($this->options['empty'])) && !empty($this->options['php_output'])) {
-      $lamda_function = create_function('$view, $handler, &$static, $results', ' ?> ' . $this->options['php_output'] . ' <?php ');
+      $lamda_function = create_function('$view, $handler, $results', ' ?> ' . $this->options['php_output'] . ' <?php ');
       ob_start();
-      $lamda_function($this->view, $this, &$this->php_static_variable, $this->view->result);
+      $lamda_function($this->view, $this, $this->view->result);
       return ob_get_clean();
     }
     return '';

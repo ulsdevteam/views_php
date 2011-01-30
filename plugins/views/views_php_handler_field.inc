@@ -42,6 +42,8 @@ class views_php_handler_field extends views_handler_field {
       '#description' =>
         t('Code to run right before execution of the view.') . ' <strong>' . t('Do not use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
         t('Available variables:') . '<br/>' .
+        t('$view: The view object.') . '<br/>' .
+        t('$handler: The handler object.') . '<br/>' .
         t('$static: can be used to store reusable data per row.')
       ,
       '#states' => array(
@@ -59,6 +61,8 @@ class views_php_handler_field extends views_handler_field {
       '#description' =>
         t('Code to construct the value of this field.') . ' <strong>' . t('Do not use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
         t('Available variables:') . '<br/>' .
+        t('$view: The view object.') . '<br/>' .
+        t('$handler: The handler object.') . '<br/>' .
         t('$data: contains the retrieved record from the database (e.g. $data->nid).') . '<br/>' .
         t('$static: can be used to store reusable data per row.')
       ,
@@ -72,6 +76,8 @@ class views_php_handler_field extends views_handler_field {
       '#description' =>
         t('Code to construct the output of this field.') . ' <strong>' . t('Use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
         t('Available variables:') . '<br/>' .
+        t('$view: The view object.') . '<br/>' .
+        t('$handler: The handler object.') . '<br/>' .
         t('$data: contains the retrieved record from the database (e.g. $data->nid).') . '<br/>' .
         t('$static: can be used to store reusable data per row.')
       ,

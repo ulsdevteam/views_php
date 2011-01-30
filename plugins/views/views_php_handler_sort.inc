@@ -37,6 +37,8 @@ class views_php_handler_sort extends views_handler_sort {
       '#description' =>
         t('Code to run right before execution of the view. May be useful to define functions to be re-used in the value and/or output code.') . ' <strong>' . t('Do not include &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
         t('Available variables:') . '<br/>' .
+        t('$view: The view object.') . '<br/>' .
+        t('$handler: The handler object.') . '<br/>' .
         t('$static: can be used to store reusable data per row.')
       ,
     );
@@ -49,9 +51,11 @@ class views_php_handler_sort extends views_handler_sort {
       '#description' =>
         t('The comparison code must return an integer less than, equal to, or greater than zero if the first row should respectively appear before, stay where it was compared to, or appear after the second row.')
         .' '.t('Do not include &lt;?php ?&gt; delimiters to enclose PHP code.')
-        .' '.t('Available variables:').'<br/>'
-        .t('$data: contains the retrieved record from the database (e.g. $data->nid).').'<br/>'
-        .t('$static: can be used to store reusable data per row.')
+        .' '.t('Available variables:') . '<br/>' .
+        //t('$view: The view object.') . '<br/>' .
+        //t('$handler: The handler object.') . '<br/>' .
+        t('$row1: Data of row.') . '<br/>' .
+        t('$row2: Data of row to compare against.')
       ,
     );
     views_php_check_access($form['php_sort']);
