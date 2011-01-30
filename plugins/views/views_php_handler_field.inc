@@ -23,7 +23,7 @@ class views_php_handler_field extends views_handler_field {
   }
 
   /**
-   * Implements views_handler#option_definition().
+   * Implements views_handler#options_form().
    */
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
