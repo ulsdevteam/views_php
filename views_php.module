@@ -49,6 +49,45 @@ function views_php_check_input_access(&$element) {
 }
 
 /**
+ * Helper function; only users with use PHP permission can provide input for given element.
+ */
+function views_php_available_variables($view, $handler, $variables = array()) {
+  $defaults = array(
+    '$view'    => t('The view object.'),
+    '$handler' => t('The handler object.'),
+    '$row'     => t('Contains the retrieved record from the database (e.g. $data->nid).'),
+    '$data'    => t('Contains the retrieved record from the database (e.g. $data->nid).'),
+    '$static'  => t('A variable that can be used to store reusable data per row.'),
+  );
+
+  $fieldset = array(
+    '#type' => 'fieldset',
+    '#title' => t('Available variables'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $items = array();
+  foreach ($variables as $name => $description) {
+    if (is_int($name) && isset($defaults[$description])) {
+      $items[] = '<a href="#">' . $description . '</a>: ' . $defaults[$description];
+      if ($description == '$row') {
+        foreach ($view->display_handler->get_handlers('field') as $field => $handler) {
+          $items[] = '<a href="#">$row->' . $field . '</a>: ' . $handler->ui_name();
+        }
+      }
+    }
+    else {
+      $items[] = '<a href="#">' . $name . '</a>: ' . $description;
+    }
+  }
+
+  $fieldset['variables']['#markup'] = theme('item_list', array('items' => $items));
+
+  return $fieldset;
+}
+
+/**
  * Implements hook_views_pre_execute().
  */
 function views_php_views_pre_execute($view) {

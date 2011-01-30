@@ -58,31 +58,19 @@ class views_php_handler_field extends views_handler_field {
       '#title' => t('Value code'),
       '#default_value' => $this->options['php_value'],
       '#rows' => 5,
-      '#description' =>
-        t('Code to construct the value of this field.') . ' <strong>' . t('Do not use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
-        t('Available variables:') . '<br/>' .
-        t('$view: The view object.') . '<br/>' .
-        t('$handler: The handler object.') . '<br/>' .
-        t('$data: contains the retrieved record from the database (e.g. $data->nid).') . '<br/>' .
-        t('$static: can be used to store reusable data per row.')
-      ,
+      '#description' => t('Code to construct the value of this field.') . ' <strong>' . t('Do not use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong>',
     );
     views_php_check_input_access($form['php_value']);
+    $form['php_value_variables'] = views_php_available_variables($this->view, $this, array('$view', '$handler', '$row', '$data', '$static'));
     $form['php_output'] = array(
       '#type' => 'textarea',
       '#title' => t('Output code'),
       '#default_value' => $this->options['php_output'],
       '#rows' => 5,
-      '#description' =>
-        t('Code to construct the output of this field.') . ' <strong>' . t('Use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
-        t('Available variables:') . '<br/>' .
-        t('$view: The view object.') . '<br/>' .
-        t('$handler: The handler object.') . '<br/>' .
-        t('$data: contains the retrieved record from the database (e.g. $data->nid).') . '<br/>' .
-        t('$static: can be used to store reusable data per row.')
-      ,
+      '#description' => t('Code to construct the output of this field.') . ' <strong>' . t('Use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong>',
     );
     views_php_check_input_access($form['php_output']);
+    $form['php_output_variables'] = views_php_available_variables($this->view, $this, array('$view', '$handler', '$row', '$data', '$static'));
   }
 
   /**
@@ -135,10 +123,14 @@ class views_php_handler_field extends views_handler_field {
   function php_post_execute() {
     // Ecexute value PHP code.
     if (!empty($this->options['php_value'])) {
-      $lamda_function = create_function('$view, $handler, &$static, $data', $this->options['php_value']);
+      $lamda_function = create_function('$view, $handler, &$static, $row, $data', $this->options['php_value']);
       ob_start();
       foreach ($this->view->result as $i => &$row) {
-        $row->{$this->field_alias} = $lamda_function($this->view, $this, $this->php_static_variable, $row);
+        $normalized_row = new stdClass;
+        foreach ($this->view->display_handler->get_handlers('field') as $field => $handler) {
+          $normalized_row->$field = isset($row->{$handler->field_alias}) ? $row->{$handler->field_alias} : NULL;
+        }
+        $row->{$this->field_alias} = $lamda_function($this->view, $this, $this->php_static_variable, $normalized_row, $row);
       }
       ob_end_clean();
     }
@@ -157,7 +149,7 @@ class views_php_handler_field extends views_handler_field {
    */
   function pre_render(&$values) {
     if (!empty($this->options['php_output'])) {
-      $this->php_output_lamda_function = create_function('$view, &$static, $data, $value', ' ?> ' . $this->options['php_output'] . ' <?php ');
+      $this->php_output_lamda_function = create_function('$view, &$static, $row, $data, $value', ' ?> ' . $this->options['php_output'] . ' <?php ');
     }
   }
 
@@ -167,9 +159,14 @@ class views_php_handler_field extends views_handler_field {
   function render($values) {
     // Ecexute output PHP code.
     if (!empty($this->options['php_output']) && isset($this->php_output_lamda_function)) {
+      $normalized_row = new stdClass;
+      foreach ($this->view->display_handler->get_handlers('field') as $field => $handler) {
+        $normalized_row->$field = isset($values->{$handler->field_alias}) ? $values->{$handler->field_alias} : NULL;
+      }
+
       $lamda_function = $this->php_output_lamda_function;
       ob_start();
-      $lamda_function($this->view, &$this->php_static_variable, $values, isset($values->{$this->field_alias}) ? $values->{$this->field_alias} : NULL);
+      $lamda_function($this->view, &$this->php_static_variable, $normalized_row, $values, isset($values->{$this->field_alias}) ? $values->{$this->field_alias} : NULL);
       $value = ob_get_clean();
     }
     else {
