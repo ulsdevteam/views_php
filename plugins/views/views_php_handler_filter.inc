@@ -33,34 +33,24 @@ class views_php_handler_filter extends views_handler_filter {
 
     $form['php_setup'] = array(
       '#type' => 'textarea',
+      '#id' => drupal_html_id('edit-options-php-setup'),
       '#title' => t('Setup code'),
       '#default_value' => $this->options['php_setup'],
       '#rows' => 5,
-      '#description' =>
-        t('Code to run right before execution of the view. May be useful to define functions to be re-used in the value and/or output code.') . ' <strong>' . t('Do not include &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
-        t('Available variables:') . '<br/>' .
-        t('$view: The view object.') . '<br/>' .
-        t('$handler: The handler object.') . '<br/>' .
-        t('$static: can be used to store reusable data per row.')
-      ,
+      '#description' => t('Code to run right before execution of the view. May be useful to define functions to be re-used in the value and/or output code.') . ' <strong>' . t('Do not include &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong>',
     );
     views_php_check_input_access($form['php_setup']);
+    $form['php_setup_variables'] = views_php_available_variables($form['php_setup'], $this->view, $this, array('$view', '$handler', '$static'));
     $form['php_filter'] = array(
       '#type' => 'textarea',
+      '#id' => drupal_html_id('edit-options-php-filter'),
       '#title' => t('Filter code'),
       '#default_value' => $this->options['php_filter'],
       '#rows' => 5,
-      '#description' =>
-        t('The text that should be displayed.')
-        .' '.t('Include &lt;?php ?&gt; delimiters when using PHP code.')
-        .' '.t('Available variables:') . '<br/>' .
-        t('$view: The view object.') . '<br/>' .
-        t('$handler: The handler object.') . '<br/>' .
-        t('$data: contains the retrieved record from the database (e.g. $data->nid).') . '<br/>' .
-        t('$static: can be used to store reusable data per row.')
-      ,
+      '#description' => t('If the code returns TRUE the current row is removed from the results.') . ' <strong>' . t('Do not use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong>',
     );
     views_php_check_input_access($form['php_filter']);
+    $form['php_filter_variables'] = views_php_available_variables($form['php_filter'], $this->view, $this, array('$view', '$handler', '$static, $data'));
   }
 
   /**

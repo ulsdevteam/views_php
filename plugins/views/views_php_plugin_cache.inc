@@ -32,32 +32,32 @@ class views_php_plugin_cache extends views_plugin_cache {
   function options_form(&$form, &$form_state) {
     $form['php_cache_results'] = array(
       '#type' => 'textarea',
+      '#id' => drupal_html_id('edit-options-php-cache-results'),
       '#title' => t('Result cache code'),
       '#default_value' => $this->options['php_cache_results'],
       '#rows' => 5,
-      '#description' =>
-        t('The code must return TRUE if the cache is still fresh, FALSE otherwise.') . ' <strong>' . t('Do not use &lt;?php ?&gt; delimiters.') . '</strong><br/>' .
-        t('Available variables:') . '<br/>' .
-        t('$view: The view object.') . '<br/>' .
-        t('$plugin: The plugin object.') . '<br/>' .
-        t('$cache: The cache object.')
-      ,
+      '#description' => t('The code must return TRUE if the cache is still fresh, FALSE otherwise.') . ' <strong>' . t('Do not use &lt;?php ?&gt; delimiters.') . '</strong>',
     );
     views_php_check_input_access($form['php_cache_output']);
+    $form['php_cache_results_variables'] = views_php_available_variables($form['php_cache_results'], $this->view, $this, array(
+      '$view',
+      '$plugin' => t('The plugin object.'),
+      '$cache' => t('The cache object.'),
+    ));
     $form['php_cache_output'] = array(
       '#type' => 'textarea',
+      '#id' => drupal_html_id('edit-options-php-cache-output'),
       '#title' => t('Output cache code'),
       '#default_value' => $this->options['php_cache_output'],
       '#rows' => 5,
-      '#description' =>
-        t('The code must return TRUE if the cache is still fresh, FALSE otherwise.') . ' <strong>' . t('Do not use &lt;?php ?&gt; delimiters.') . '</strong><br/>' .
-        t('Available variables:') . '<br/>' .
-        t('$view: The view object.') . '<br/>' .
-        t('$plugin: The plugin object.') . '<br/>' .
-        t('$cache: The cache object.')
-      ,
+      '#description' => t('The code must return TRUE if the cache is still fresh, FALSE otherwise.') . ' <strong>' . t('Do not use &lt;?php ?&gt; delimiters.') . '</strong>',
     );
     views_php_check_input_access($form['php_cache_output']);
+    $form['php_cache_output_variables'] = views_php_available_variables($form['php_cache_output'], $this->view, $this, array(
+      '$view',
+      '$plugin' => t('The plugin object.'),
+      '$cache' => t('The cache object.'),
+    ));
   }
 
   /**

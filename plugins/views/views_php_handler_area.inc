@@ -26,18 +26,14 @@ class views_php_handler_area extends views_handler_area {
 
     $form['php_output'] = array(
       '#type' => 'textarea',
+      '#id' => drupal_html_id('edit-options-php-setup'),
       '#title' => t('Output code'),
       '#default_value' => $this->options['php_output'],
       '#rows' => 5,
-      '#description' =>
-        t('Code to construct the output of this area.') . ' <strong>' . t('Use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
-        t('Available variables:') . '<br/>' .
-        t('$view: The view object.') . '<br/>' .
-        t('$handler: The handler object.') . '<br/>' .
-        t('$results: Array containing view\'s result set.')
-      ,
+      '#description' => t('Code to construct the output of this area.') . ' <strong>' . t('Use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong>',
     );
     views_php_check_input_access($form['php_output']);
+    $form['php_output_variables'] = views_php_available_variables($form['php_output'], $this->view, $this, array('$view', '$handler', '$results'));
   }
 
 

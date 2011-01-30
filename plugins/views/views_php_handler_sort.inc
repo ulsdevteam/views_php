@@ -31,34 +31,27 @@ class views_php_handler_sort extends views_handler_sort {
 
     $form['php_setup'] = array(
       '#type' => 'textarea',
+      '#id' => drupal_html_id('edit-options-php-setup'),
       '#title' => t('Setup code'),
       '#default_value' => $this->options['php_setup'],
       '#rows' => 5,
-      '#description' =>
-        t('Code to run right before execution of the view. May be useful to define functions to be re-used in the value and/or output code.') . ' <strong>' . t('Do not include &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong><br/>' .
-        t('Available variables:') . '<br/>' .
-        t('$view: The view object.') . '<br/>' .
-        t('$handler: The handler object.') . '<br/>' .
-        t('$static: can be used to store reusable data per row.')
-      ,
+      '#description' => t('Code to run right before execution of the view. May be useful to define functions to be re-used in the value and/or output code.') . ' <strong>' . t('Do not include &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong>',
     );
     views_php_check_input_access($form['php_setup']);
+    $form['php_setup_variables'] = views_php_available_variables($form['php_setup'], $this->view, $this, array('$view', '$handler', '$static'));
     $form['php_sort'] = array(
       '#type' => 'textarea',
+      '#id' => drupal_html_id('edit-options-php-sort'),
       '#title' => t('Sort comparison code'),
       '#default_value' => $this->options['php_sort'],
       '#rows' => 5,
-      '#description' =>
-        t('The comparison code must return an integer less than, equal to, or greater than zero if the first row should respectively appear before, stay where it was compared to, or appear after the second row.')
-        .' '.t('Do not include &lt;?php ?&gt; delimiters to enclose PHP code.')
-        .' '.t('Available variables:') . '<br/>' .
-        //t('$view: The view object.') . '<br/>' .
-        //t('$handler: The handler object.') . '<br/>' .
-        t('$row1: Data of row.') . '<br/>' .
-        t('$row2: Data of row to compare against.')
-      ,
+      '#description' => t('The comparison code must return an integer less than, equal to, or greater than zero if the first row should respectively appear before, stay where it was compared to, or appear after the second row.') . ' <strong>' . t('Do not include &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong>',
     );
     views_php_check_input_access($form['php_sort']);
+    $form['php_sort_variables'] = views_php_available_variables($form['php_sort'], $this->view, $this, array(
+      '$row1' => t('Data of row.'),
+      '$row2' => t('Data of row to compare against.'),
+    ));
   }
 
   /**

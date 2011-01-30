@@ -31,18 +31,18 @@ class views_php_plugin_access extends views_plugin_access {
   function options_form(&$form, &$form_state) {
     $form['php_access'] = array(
       '#type' => 'textarea',
+      '#id' => drupal_html_id('edit-options-php-access'),
       '#title' => t('Access code'),
       '#default_value' => $this->options['php_access'],
       '#rows' => 5,
-      '#description' =>
-        t('Code to construct the value of this field.') . ' <strong>' . t('Do not use &lt;?php ?&gt; delimiters.') . '</strong><br/>' .
-        t('Available variables:') . '<br/>' .
-        t('$view_name: The name of the view to check.') . '<br/>' .
-        t('$display_id: The ID of the display to check.') . '<br/>' .
-        t('$account: The account to check.')
-      ,
+      '#description' => t('Code to construct the value of this field.') . ' <strong>' . t('Do not use &lt;?php ?&gt; delimiters.') . '</strong>',
     );
     views_php_check_input_access($form['php_access']);
+    $form['php_access_variables'] = views_php_available_variables($form['php_access'], $this->view, $this, array(
+      '$view_name' => t('The name of the view to check.'),
+      '$display_id' => t('The ID of the display to check.'),
+      '$account' => t('The account to check.'),
+    ));
   }
 
   /**

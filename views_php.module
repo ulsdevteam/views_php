@@ -51,38 +51,45 @@ function views_php_check_input_access(&$element) {
 /**
  * Helper function; only users with use PHP permission can provide input for given element.
  */
-function views_php_available_variables($view, $handler, $variables = array()) {
+function views_php_available_variables(&$element, $view, $handler, $variables = array()) {
   $defaults = array(
     '$view'    => t('The view object.'),
     '$handler' => t('The handler object.'),
     '$row'     => t('Contains the retrieved record from the database (e.g. $data->nid).'),
     '$data'    => t('Contains the retrieved record from the database (e.g. $data->nid).'),
+    '$results'  => t('Array containing the view\'s result.'),
     '$static'  => t('A variable that can be used to store reusable data per row.'),
   );
+
+  $items = array();
+  foreach ($variables as $name => $description) {
+    if (is_int($name) && isset($defaults[$description])) {
+      $items[] = l($description, '', array('fragment' => $element['#id'], 'external' => TRUE)) . ': ' . $defaults[$description];
+      if ($description == '$row') {
+        foreach ($view->display_handler->get_handlers('field') as $field => $handler) {
+          $items[] = l('$row->' . $field, '', array('fragment' => $element['#id'], 'external' => TRUE)) . ': ' . $handler->ui_name();
+        }
+      }
+    }
+    else {
+      $items[] = l($name, '', array('fragment' => $element['#id'], 'external' => TRUE)) . ': ' . $description;
+    }
+  }
 
   $fieldset = array(
     '#type' => 'fieldset',
     '#title' => t('Available variables'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
+    '#attributes' => array('class' => array('views-php-variables')),
+    '#attached' => array(
+      'js' => array(drupal_get_path('module', 'views_php') . '/views_php.js'),
+    )
   );
-
-  $items = array();
-  foreach ($variables as $name => $description) {
-    if (is_int($name) && isset($defaults[$description])) {
-      $items[] = '<a href="#">' . $description . '</a>: ' . $defaults[$description];
-      if ($description == '$row') {
-        foreach ($view->display_handler->get_handlers('field') as $field => $handler) {
-          $items[] = '<a href="#">$row->' . $field . '</a>: ' . $handler->ui_name();
-        }
-      }
-    }
-    else {
-      $items[] = '<a href="#">' . $name . '</a>: ' . $description;
-    }
-  }
-
-  $fieldset['variables']['#markup'] = theme('item_list', array('items' => $items));
+  $fieldset['variables'] = array(
+    '#theme' => 'item_list',
+    '#items' => $items,
+  );
 
   return $fieldset;
 }
