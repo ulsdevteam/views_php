@@ -19,7 +19,7 @@ function views_php_views_api() {
  * Menu access callback function; use PHP code to determine whether a user as
  * access.
  */
-function views_php_access($php_access, $view_name, $display_id, $account = NULL) {
+function views_php_check_access($php_access, $view_name, $display_id, $account = NULL) {
   global $user;
   static $lamda_function = array();
 
@@ -40,7 +40,7 @@ function views_php_access($php_access, $view_name, $display_id, $account = NULL)
 /**
  * Helper function; only users with use PHP permission can provide input for given element.
  */
-function views_php_check_access(&$element) {
+function views_php_check_input_access(&$element) {
   if (!user_access('use PHP for settings')) {
     $element['#disabled'] = TRUE;
     $element['#value'] = $element['#default_value'];

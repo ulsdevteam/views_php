@@ -43,7 +43,7 @@ class views_php_plugin_cache extends views_plugin_cache {
         t('$cache: The cache object.')
       ,
     );
-    views_php_check_access($form['php_cache_output']);
+    views_php_check_input_access($form['php_cache_output']);
     $form['php_cache_output'] = array(
       '#type' => 'textarea',
       '#title' => t('Output cache code'),
@@ -57,7 +57,7 @@ class views_php_plugin_cache extends views_plugin_cache {
         t('$cache: The cache object.')
       ,
     );
-    views_php_check_access($form['php_cache_output']);
+    views_php_check_input_access($form['php_cache_output']);
   }
 
   /**

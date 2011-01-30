@@ -44,7 +44,7 @@ class views_php_handler_filter extends views_handler_filter {
         t('$static: can be used to store reusable data per row.')
       ,
     );
-    views_php_check_access($form['php_setup']);
+    views_php_check_input_access($form['php_setup']);
     $form['php_filter'] = array(
       '#type' => 'textarea',
       '#title' => t('Filter code'),
@@ -60,7 +60,7 @@ class views_php_handler_filter extends views_handler_filter {
         t('$static: can be used to store reusable data per row.')
       ,
     );
-    views_php_check_access($form['php_filter']);
+    views_php_check_input_access($form['php_filter']);
   }
 
   /**

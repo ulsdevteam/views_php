@@ -37,7 +37,7 @@ class views_php_handler_area extends views_handler_area {
         t('$results: Array containing view\'s result set.')
       ,
     );
-    views_php_check_access($form['php_output']);
+    views_php_check_input_access($form['php_output']);
   }
 
 

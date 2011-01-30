@@ -52,7 +52,7 @@ class views_php_handler_field extends views_handler_field {
         ),
       ),
     );
-    views_php_check_access($form['php_setup']);
+    views_php_check_input_access($form['php_setup']);
     $form['php_value'] = array(
       '#type' => 'textarea',
       '#title' => t('Value code'),
@@ -67,7 +67,7 @@ class views_php_handler_field extends views_handler_field {
         t('$static: can be used to store reusable data per row.')
       ,
     );
-    views_php_check_access($form['php_value']);
+    views_php_check_input_access($form['php_value']);
     $form['php_output'] = array(
       '#type' => 'textarea',
       '#title' => t('Output code'),
@@ -82,7 +82,7 @@ class views_php_handler_field extends views_handler_field {
         t('$static: can be used to store reusable data per row.')
       ,
     );
-    views_php_check_access($form['php_output']);
+    views_php_check_input_access($form['php_output']);
   }
 
   /**

@@ -42,7 +42,7 @@ class views_php_handler_sort extends views_handler_sort {
         t('$static: can be used to store reusable data per row.')
       ,
     );
-    views_php_check_access($form['php_setup']);
+    views_php_check_input_access($form['php_setup']);
     $form['php_sort'] = array(
       '#type' => 'textarea',
       '#title' => t('Sort comparison code'),
@@ -58,7 +58,7 @@ class views_php_handler_sort extends views_handler_sort {
         t('$row2: Data of row to compare against.')
       ,
     );
-    views_php_check_access($form['php_sort']);
+    views_php_check_input_access($form['php_sort']);
   }
 
   /**
