@@ -18,6 +18,7 @@ class views_php_handler_field extends views_handler_field {
     $options['php_setup'] = array('default' => '');
     $options['php_value'] = array('default' => '');
     $options['php_output'] = array('default' => '');
+    $options['use_php_click_sortable'] = array('default' => FALSE);
     $options['php_click_sortable'] = array('default' => FALSE);
     return $options;
   }
@@ -37,6 +38,14 @@ class views_php_handler_field extends views_handler_field {
       FALSE,
       array('php_value', t('Value code'), t('Code to construct the value of this field.'), false),
       array('$view', '$handler', '$static', '$row', '$data')
+    );
+    $form += views_php_form_element($this,
+      array('use_php_click_sortable', t('Enable click sort'), t('If checked, you can use PHP code to enable click sort on the field.')),
+      array('php_click_sortable', t('Click sort code'), t('The comparison code must return an integer less than, equal to, or greater than zero if the first row should respectively appear before, stay where it was compared to, or appear after the second row.'), false),
+      array(
+        '$row1' => t('Data of row.'),
+        '$row2' => t('Data of row to compare against.'),
+      )
     );
     $form += views_php_form_element($this,
       FALSE,
