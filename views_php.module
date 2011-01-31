@@ -58,7 +58,8 @@ function views_php_form_element($handler, $checkbox = FALSE, $input, $variables 
   list($name, $title, $description, $use_delimiters) = $input;
   $container = array(
     '#type' => 'container',
-    '#tree' => FALSE,
+    // @todo #tree => FALSE doesn't work here.
+    '#parents' => array('options'),
   );
 
   if (!empty($checkbox)) {
@@ -108,7 +109,6 @@ function views_php_form_element($handler, $checkbox = FALSE, $input, $variables 
     }
   }
   $container[$name . '_variables'] = array(
-    '#tree' => TRUE,
     '#type' => 'fieldset',
     '#title' => t('Available variables'),
     '#collapsible' => TRUE,
