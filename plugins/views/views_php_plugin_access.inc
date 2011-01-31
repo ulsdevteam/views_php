@@ -29,6 +29,8 @@ class views_php_plugin_access extends views_plugin_access {
    * Implements views_plugin#options_form().
    */
   function options_form(&$form, &$form_state) {
+    parent::options_form($form, $form_state);
+
     $form += views_php_form_element($this,
       FALSE,
       array('php_access', t('Access code'), t('If the code returns TRUE the requesting user is granted access to the view.'), false),

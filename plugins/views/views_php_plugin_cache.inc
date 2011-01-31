@@ -30,6 +30,8 @@ class views_php_plugin_cache extends views_plugin_cache {
    * Implements views_plugin#options_form().
    */
   function options_form(&$form, &$form_state) {
+    parent::options_form($form, $form_state);
+
     $form += views_php_form_element($this,
       FALSE,
       array('php_cache_results', t('Result cache code'), t('The code must return TRUE if the cache is still fresh, FALSE otherwise.'), false),
