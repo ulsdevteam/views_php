@@ -7,7 +7,13 @@
  * @ingroup views_field_handlers
  */
 class views_php_handler_field extends views_handler_field {
-
+  const CLICK_SORT_DISABLED = 0;
+  const CLICK_SORT_NUMERIC = 1;
+  const CLICK_SORT_ALPHA = 2;
+  const CLICK_SORT_ALPHA_CASE = 3;
+  const CLICK_SORT_NAT = 4;
+  const CLICK_SORT_NAT_CASE = 5;
+  const CLICK_SORT_PHP = 6;
 
   /**
    * Implements views_object#option_definition().
@@ -18,7 +24,7 @@ class views_php_handler_field extends views_handler_field {
     $options['php_setup'] = array('default' => '');
     $options['php_value'] = array('default' => '');
     $options['php_output'] = array('default' => '');
-    $options['use_php_click_sortable'] = array('default' => FALSE);
+    $options['use_php_click_sortable'] = array('default' => self::CLICK_SORT_DISABLED);
     $options['php_click_sortable'] = array('default' => FALSE);
     return $options;
   }
@@ -43,14 +49,31 @@ class views_php_handler_field extends views_handler_field {
       array('use_php_click_sortable', t('Enable click sort'), t('If checked, you can use PHP code to enable click sort on the field.')),
       array('php_click_sortable', t('Click sort code'), t('The comparison code must return an integer less than, equal to, or greater than zero if the first row should respectively appear before, stay where it was compared to, or appear after the second row.'), false),
       array(
+        '$view', '$handler',
         '$row1' => t('Data of row.'),
         '$row2' => t('Data of row to compare against.'),
       )
     );
+    $form['use_php_click_sortable']['#type'] = 'select';
+    $form['use_php_click_sortable']['#options'] = array(
+      self::CLICK_SORT_DISABLED => t('No'),
+      self::CLICK_SORT_NUMERIC => t('Sort numerically'),
+      self::CLICK_SORT_ALPHA => t('Sort alphabetically'),
+      self::CLICK_SORT_ALPHA_CASE => t('Sort alphabetically (case insensitive)'),
+      self::CLICK_SORT_NAT => t('Sort using a "natural order" algorithm'),
+      self::CLICK_SORT_NAT_CASE => t('Sort using a "natural order" algorithm (case insensitive)'),
+      self::CLICK_SORT_PHP => t('Sort using custom PHP code'),
+    );
+    $form['use_php_click_sortable']['#default_value'] = $this->options['use_php_click_sortable'];
+    $form['php_click_sortable']['#states'] = array(
+      'visible' => array(
+        ':input[name="options[use_php_click_sortable]"]' => array('value' => (string)self::CLICK_SORT_PHP),
+      ),
+    );
     $form += views_php_form_element($this,
       FALSE,
       array('php_output', t('Output code'), t('Code to construct the output of this field.'), true),
-      array('$view', '$handler', '$static', '$row', '$data')
+      array('$view', '$handler', '$static', '$row', '$data', '$value' => t('Value of this field.'))
     );
   }
 
@@ -117,12 +140,50 @@ class views_php_handler_field extends views_handler_field {
     }
 
     // If we're sorting, do the actual sorting then fix the results as per the pager info.
-    if (!empty($this->options['php_click_sortable']) && !empty($this->php_click_sort_order)) {
-      $lamda_function = create_function('$row1, $row2', $this->options['php_click_sortable']);
+    if (!empty($this->options['use_php_click_sortable']) && !empty($this->php_click_sort_order)) {
+      if ($this->options['use_php_click_sortable'] == self::CLICK_SORT_PHP) {
+        if (!empty($this->options['php_click_sortable'])) {
+          $this->php_click_sort_function = create_function('$view, $handler, $row1, $row2', $this->options['php_click_sortable']);
+        }
+      }
+      else {
+        $predefined = array(
+          self::CLICK_SORT_NUMERIC => array($this, 'php_click_sort_numeric'),
+          self::CLICK_SORT_ALPHA => 'strcasecmp',
+          self::CLICK_SORT_ALPHA_CASE => 'strcmp',
+          self::CLICK_SORT_NAT => 'strnatcasecmp',
+          self::CLICK_SORT_NAT_CASE => 'strnatcmp',
+        );
+        $this->php_click_sort_function = $predefined[$this->options['php_click_sortable']];
+      }
+
+      if (isset($this->php_click_sort_function)) {
+        usort($this->view->result, array($this, 'php_click_sort'));
+      }
+    }
+  }
+
+  /**
+   * Helper function; usort() callback for click sort support.
+   */
+  function php_click_sort($row1, $row2) {
+    $factor = strtoupper($this->php_click_sort_order) == 'ASC' ? 1 : -1;
+    if ($this->options['php_click_sortable'] == self::CLICK_SORT_PHP) {
       ob_start();
-      usort($this->view->result, $lamda_function);
+      $result = (int)call_user_func($this->php_click_sort_function, $this->view, $this, $row1, $row2);
       ob_end_clean();
     }
+    else {
+      $result = call_user_func($this->function, $row1->{$this->field_alias}, $row2->{$this->field_alias});
+    }
+    return $this->factor * $result;
+  }
+
+  /**
+   * Helper function; usort callback for numeric sort.
+   */
+  function php_click_sort_numeric($a, $b) {
+    return $a - $b;
   }
 
   /**
@@ -130,7 +191,7 @@ class views_php_handler_field extends views_handler_field {
    */
   function pre_render(&$values) {
     if (!empty($this->options['php_output'])) {
-      $this->php_output_lamda_function = create_function('$view, &$static, $row, $data, $value', ' ?> ' . $this->options['php_output'] . ' <?php ');
+      $this->php_output_lamda_function = create_function('$view, $handler, &$static, $row, $data, $value', ' ?> ' . $this->options['php_output'] . ' <?php ');
     }
   }
 
@@ -147,7 +208,7 @@ class views_php_handler_field extends views_handler_field {
 
       $lamda_function = $this->php_output_lamda_function;
       ob_start();
-      $lamda_function($this->view, &$this->php_static_variable, $normalized_row, $values, isset($values->{$this->field_alias}) ? $values->{$this->field_alias} : NULL);
+      $lamda_function($this->view, $this, &$this->php_static_variable, $normalized_row, $values, isset($values->{$this->field_alias}) ? $values->{$this->field_alias} : NULL);
       $value = ob_get_clean();
     }
     else {

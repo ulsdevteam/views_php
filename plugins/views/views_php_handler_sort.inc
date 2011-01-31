@@ -9,11 +9,6 @@
 class views_php_handler_sort extends views_handler_sort {
 
   /**
-   * Implements views_handler#can_expose().
-   */
-  function can_expose() { return FALSE; }
-
-  /**
    * Implements views_object#option_definition().
    */
   function option_definition() {
