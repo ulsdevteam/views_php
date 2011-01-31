@@ -2,7 +2,7 @@
 (function ($) {
 
 /**
- * Attach outline behavior for regions associated with contextual links.
+ * Attach views php clickable variables behavior.
  */
 Drupal.behaviors.viewsPHPVariables = {
   attach: function (context) {
