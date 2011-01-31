@@ -28,48 +28,21 @@ class views_php_handler_field extends views_handler_field {
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
 
-    $form['use_php_setup'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Use setup PHP code'),
-      '#description' => t('If checked, you can provide PHP code to be run once right before execution of the view. This may be useful to define functions to be re-used in the value and/or output code.'),
-      '#default_value' => $this->options['use_php_setup'] && !empty($this->options['php_setup']),
+    $form += views_php_form_element($this,
+      array('use_php_setup', t('Use setup code'), t('If checked, you can provide PHP code to be run once right before execution of the view. This may be useful to define functions to be re-used in the value and/or output code.')),
+      array('php_setup', t('Setup code'), t('Code to run right before execution of the view.'), false),
+      array('$view', '$handler', '$static')
     );
-    $form['php_setup'] = array(
-      '#type' => 'textarea',
-      '#id' => drupal_html_id('edit-options-php-setup'),
-      '#title' => t('Setup code'),
-      '#default_value' => $this->options['php_setup'],
-      '#rows' => 5,
-      '#description' => t('Code to run right before execution of the view.') . ' <strong>' . t('Do not use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong>',
-      '#states' => array(
-        'invisible' => array(
-          'input[name="options[use_php_setup]"]' => array('checked' => FALSE),
-        ),
-      ),
+    $form += views_php_form_element($this,
+      FALSE,
+      array('php_value', t('Value code'), t('Code to construct the value of this field.'), false),
+      array('$view', '$handler', '$static', '$row', '$data')
     );
-    views_php_check_input_access($form['php_setup']);
-    $form['php_setup_variables'] = views_php_available_variables($form['php_setup'], $this->view, $this, array('$view', '$handler', '$static'));
-    $form['php_setup_variables']['#states'] = $form['php_setup']['#states'];
-    $form['php_value'] = array(
-      '#type' => 'textarea',
-      '#id' => drupal_html_id('edit-options-php-value'),
-      '#title' => t('Value code'),
-      '#default_value' => $this->options['php_value'],
-      '#rows' => 5,
-      '#description' => t('Code to construct the value of this field.') . ' <strong>' . t('Do not use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong>',
+    $form += views_php_form_element($this,
+      FALSE,
+      array('php_output', t('Output code'), t('Code to construct the output of this field.'), true),
+      array('$view', '$handler', '$static', '$row', '$data')
     );
-    views_php_check_input_access($form['php_value']);
-    $form['php_value_variables'] = views_php_available_variables($form['php_value'], $this->view, $this, array('$view', '$handler', '$row', '$data', '$static'));
-    $form['php_output'] = array(
-      '#type' => 'textarea',
-      '#id' => drupal_html_id('edit-options-php-output'),
-      '#title' => t('Output code'),
-      '#default_value' => $this->options['php_output'],
-      '#rows' => 5,
-      '#description' => t('Code to construct the output of this field.') . ' <strong>' . t('Use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong>',
-    );
-    views_php_check_input_access($form['php_output']);
-    $form['php_output_variables'] = views_php_available_variables($form['php_output'], $this->view, $this, array('$view', '$handler', '$row', '$data', '$static'));
   }
 
   /**

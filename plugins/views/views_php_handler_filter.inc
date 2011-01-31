@@ -9,6 +9,11 @@
 class views_php_handler_filter extends views_handler_filter {
 
   /**
+   * Implements views_handler#can_expose().
+   */
+  function can_expose() { return FALSE; }
+
+  /**
    * Implements views_object#admin_summary().
    */
   function admin_summary() {
@@ -20,6 +25,7 @@ class views_php_handler_filter extends views_handler_filter {
    */
   function option_definition() {
     $options = parent::option_definition();
+    $options['use_php_setup'] = array('default' => FALSE);
     $options['php_setup'] = array('default' => '');
     $options['php_filter'] = array('default' => '');
     return $options;
@@ -31,26 +37,16 @@ class views_php_handler_filter extends views_handler_filter {
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
 
-    $form['php_setup'] = array(
-      '#type' => 'textarea',
-      '#id' => drupal_html_id('edit-options-php-setup'),
-      '#title' => t('Setup code'),
-      '#default_value' => $this->options['php_setup'],
-      '#rows' => 5,
-      '#description' => t('Code to run right before execution of the view. May be useful to define functions to be re-used in the value and/or output code.') . ' <strong>' . t('Do not include &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong>',
+    $form += views_php_form_element($this,
+      array('use_php_setup', t('Use setup code'), t('If checked, you can provide PHP code to be run once right before execution of the view. This may be useful to define functions to be re-used in the value and/or output code.')),
+      array('php_setup', t('Setup code'), t('Code to run right before execution of the view.'), false),
+      array('$view', '$handler', '$static')
     );
-    views_php_check_input_access($form['php_setup']);
-    $form['php_setup_variables'] = views_php_available_variables($form['php_setup'], $this->view, $this, array('$view', '$handler', '$static'));
-    $form['php_filter'] = array(
-      '#type' => 'textarea',
-      '#id' => drupal_html_id('edit-options-php-filter'),
-      '#title' => t('Filter code'),
-      '#default_value' => $this->options['php_filter'],
-      '#rows' => 5,
-      '#description' => t('If the code returns TRUE the current row is removed from the results.') . ' <strong>' . t('Do not use &lt;?php ?&gt; delimiters to enclose PHP code.') . '</strong>',
+    $form += views_php_form_element($this,
+      FALSE,
+      array('php_filter', t('Filter code'), t('If the code returns TRUE the current row is removed from the results.'), false),
+      array('$view', '$handler', '$static', '$row', '$data')
     );
-    views_php_check_input_access($form['php_filter']);
-    $form['php_filter_variables'] = views_php_available_variables($form['php_filter'], $this->view, $this, array('$view', '$handler', '$static, $data'));
   }
 
   /**
@@ -82,10 +78,14 @@ class views_php_handler_filter extends views_handler_filter {
   function php_post_execute() {
     // Evaluate the PHP code.
     if (!empty($this->options['php_filter'])) {
-      $lamda_function = create_function('$view, $handler, &$static, $data', $this->options['php_filter']);
+      $lamda_function = create_function('$view, $handler, &$static, $row, $data', $this->options['php_filter']);
       ob_start();
       foreach ($this->view->result as $i => $row) {
-        if ($lamda_function($this->view, $this, &$this->php_static_variable, $row)) {
+        $normalized_row = new stdClass;
+        foreach ($this->view->display_handler->get_handlers('field') as $field => $handler) {
+          $normalized_row->$field = isset($row->{$handler->field_alias}) ? $row->{$handler->field_alias} : NULL;
+        }
+        if ($lamda_function($this->view, $this, &$this->php_static_variable, $normalized_row, $row)) {
           unset($this->view->result[$i]);
         }
       }

@@ -38,45 +38,77 @@ function views_php_check_access($php_access, $view_name, $display_id, $account =
 }
 
 /**
- * Helper function; only users with use PHP permission can provide input for given element.
+ * Helper function; builds form for PHP code options of views handlers/plugins.
  */
-function views_php_check_input_access(&$element) {
-  if (!user_access('use PHP for settings')) {
-    $element['#disabled'] = TRUE;
-    $element['#value'] = $element['#default_value'];
-    $element['#description'] .= ' <strong>' . t('Note: you do not have permission to modify this.') . '</strong>';
+function views_php_form_element($handler, $checkbox = FALSE, $input, $variables = array()) {
+  static $default_variables;
+  if (!isset($default_variables)) {
+    $default_variables = array(
+      '$view'    => t('The view object.'),
+      '$handler' => t('The handler object.'),
+      '$plugin'  => t('The plugin object.'),
+      '$static'  => t('A variable that can be used to store reusable data per row.'),
+      '$row'     => t('Contains the retrieved record from the database (e.g. $data->nid).'),
+      '$data'    => t('Contains the retrieved record from the database (e.g. $data->nid).'),
+      '$results' => t('Array containing the view\'s result.'),
+      '$cache'   => t('The cache object.'),
+    );
   }
-}
 
-/**
- * Helper function; only users with use PHP permission can provide input for given element.
- */
-function views_php_available_variables(&$element, $view, $handler, $variables = array()) {
-  $defaults = array(
-    '$view'    => t('The view object.'),
-    '$handler' => t('The handler object.'),
-    '$row'     => t('Contains the retrieved record from the database (e.g. $data->nid).'),
-    '$data'    => t('Contains the retrieved record from the database (e.g. $data->nid).'),
-    '$results'  => t('Array containing the view\'s result.'),
-    '$static'  => t('A variable that can be used to store reusable data per row.'),
+  list($name, $title, $description, $use_delimiters) = $input;
+  $container = array(
+    '#type' => 'container',
+    '#tree' => FALSE,
   );
 
-  $items = array();
-  foreach ($variables as $name => $description) {
-    if (is_int($name) && isset($defaults[$description])) {
-      $items[] = l($description, '', array('fragment' => $element['#id'], 'external' => TRUE)) . ': ' . $defaults[$description];
-      if ($description == '$row') {
-        foreach ($view->display_handler->get_handlers('field') as $field => $handler) {
-          $items[] = l('$row->' . $field, '', array('fragment' => $element['#id'], 'external' => TRUE)) . ': ' . $handler->ui_name();
-        }
-      }
-    }
-    else {
-      $items[] = l($name, '', array('fragment' => $element['#id'], 'external' => TRUE)) . ': ' . $description;
-    }
+  if (!empty($checkbox)) {
+    list($checkbox_name, $checkbox_title, $checkbox_description) = $checkbox;
+    $checkbox = array(
+      '#type' => 'checkbox',
+      '#title' => $checkbox_title,
+      '#description' => $checkbox_description,
+      '#default_value' => $handler->options[$checkbox_name] && !empty($handler->options[$name]),
+    );
+    $container['#states'] = array(
+      'invisible' => array(
+        'input[name="options[use_' . $name . ']"]' => array('checked' => FALSE),
+      ),
+    );
+  }
+  $container[$name] = array(
+    '#type' => 'textarea',
+    '#id' => drupal_html_id('edit-options-' . $name),
+    '#title' => $title,
+    '#default_value' => $handler->options[$name],
+    '#rows' => 5,
+    '#description' => $description . ' <strong>' . ($use_delimiters
+      ? t('Use &lt;?php ?&gt; delimiters to enclose PHP code.')
+      : t('Do not use &lt;?php ?&gt; delimiters.'))
+      . '</strong>',
+  );
+  // Only users with use PHP permission can set/modify input.
+  if (!user_access('use PHP for settings')) {
+    $container[$name]['#disabled'] = TRUE;
+    $container[$name]['#value'] = $container[$name]['#default_value'];
+    $container[$name]['#description'] .= ' <strong>' . t('You do not have permission to modify this.') . '</strong>';
   }
 
-  $fieldset = array(
+  $items = array();
+  foreach ($variables as $variable_name => $description) {
+    if (is_int($variable_name)) {
+      $variable_name = $description;
+      $description = isset($default_variables[$description]) ? $default_variables[$description] : '';
+    }
+    $items[] = l($variable_name, '', array('fragment' => $container[$name]['#id'], 'external' => TRUE)) . ': ' . $description;
+
+    if (strpos($variable_name, '$row') === 0) {
+      foreach ($handler->view->display_handler->get_handlers('field') as $field => $field_handler) {
+        $items[] = l($variable_name . '->' . $field, '', array('fragment' => $container[$name]['#id'], 'external' => TRUE)) . ': ' . $field_handler->ui_name();
+      }
+    }
+  }
+  $container[$name . '_variables'] = array(
+    '#tree' => TRUE,
     '#type' => 'fieldset',
     '#title' => t('Available variables'),
     '#collapsible' => TRUE,
@@ -86,12 +118,15 @@ function views_php_available_variables(&$element, $view, $handler, $variables = 
       'js' => array(drupal_get_path('module', 'views_php') . '/views_php.js'),
     )
   );
-  $fieldset['variables'] = array(
+  $container[$name . '_variables']['variables'] = array(
     '#theme' => 'item_list',
     '#items' => $items,
   );
 
-  return $fieldset;
+  if (!empty($checkbox)) {
+    return array($checkbox_name => $checkbox, $name => $container);
+  }
+  return array($name => $container);
 }
 
 /**
