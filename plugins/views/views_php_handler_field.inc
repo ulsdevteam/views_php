@@ -49,7 +49,7 @@ class views_php_handler_field extends views_handler_field {
       array('use_php_click_sortable', t('Enable click sort'), t('If checked, you can use PHP code to enable click sort on the field.')),
       array('php_click_sortable', t('Click sort code'), t('The comparison code must return an integer less than, equal to, or greater than zero if the first row should respectively appear before, stay where it was compared to, or appear after the second row.'), false),
       array(
-        '$view', '$handler',
+        '$view', '$handler', '$static',
         '$row1' => t('Data of row.'),
         '$row2' => t('Data of row to compare against.'),
       )
@@ -143,7 +143,7 @@ class views_php_handler_field extends views_handler_field {
     if (!empty($this->options['use_php_click_sortable']) && !empty($this->php_click_sort_order)) {
       if ($this->options['use_php_click_sortable'] == self::CLICK_SORT_PHP) {
         if (!empty($this->options['php_click_sortable'])) {
-          $this->php_click_sort_function = create_function('$view, $handler, $row1, $row2', $this->options['php_click_sortable']);
+          $this->php_click_sort_function = create_function('$view, $handler, &$static, $row1, $row2', $this->options['php_click_sortable']);
         }
       }
       else {
@@ -170,13 +170,13 @@ class views_php_handler_field extends views_handler_field {
     $factor = strtoupper($this->php_click_sort_order) == 'ASC' ? 1 : -1;
     if ($this->options['php_click_sortable'] == self::CLICK_SORT_PHP) {
       ob_start();
-      $result = (int)call_user_func($this->php_click_sort_function, $this->view, $this, $row1, $row2);
+      $result = (int)call_user_func($this->php_click_sort_function, $this->view, $this, &$this->php_static_variable, $row1, $row2);
       ob_end_clean();
     }
     else {
       $result = call_user_func($this->function, $row1->{$this->field_alias}, $row2->{$this->field_alias});
     }
-    return $this->factor * $result;
+    return $factor * $result;
   }
 
   /**

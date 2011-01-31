@@ -34,6 +34,7 @@ class views_php_handler_sort extends views_handler_sort {
       FALSE,
       array('php_sort', t('Sort code'), t('The comparison code must return an integer less than, equal to, or greater than zero if the first row should respectively appear before, stay where it was compared to, or appear after the second row.'), false),
       array(
+        '$view', '$handler', '$static',
         '$row1' => t('Data of row.'),
         '$row2' => t('Data of row to compare against.'),
       )
@@ -68,10 +69,19 @@ class views_php_handler_sort extends views_handler_sort {
    */
   function php_post_execute() {
     if (!empty($this->options['php_sort']) && $this->view->style_plugin->build_sort()) {
-      $lamda_function = create_function('$row1, $row2', $this->options['php_sort']);
+      $this->php_sort_function = create_function('$view, $handler, &$static, $row1, $row2', $this->options['php_sort']);
       ob_start();
-      usort($this->view->result, $lamda_function);
+      usort($this->view->result, array($this, 'php_sort'));
       ob_end_clean();
     }
+  }
+
+  /**
+   * Helper function; usort() callback for sort support.
+   */
+  function php_sort($row1, $row2) {
+    $factor = strtoupper($this->options['order']) == 'ASC' ? 1 : -1;
+    $result = (int)call_user_func($this->php_sort_function, $this->view, $this, &$this->php_static_variable, $row1, $row2);
+    return $factor * $result;
   }
 }
