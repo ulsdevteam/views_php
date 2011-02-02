@@ -8,6 +8,8 @@
  */
 class views_php_handler_sort extends views_handler_sort {
 
+  protected $php_static_variable = NULL;
+
   /**
    * Implements views_object#option_definition().
    */
@@ -58,7 +60,7 @@ class views_php_handler_sort extends views_handler_sort {
     if (!empty($this->options['php_setup'])) {
       $lamda_function = create_function('$view, $handler, &$static', $this->options['php_setup']);
       ob_start();
-      $lamda_function($this->view, $this, &$this->php_static_variable);
+      $lamda_function($this->view, $this, $this->php_static_variable);
       ob_end_clean();
     }
   }
@@ -81,7 +83,7 @@ class views_php_handler_sort extends views_handler_sort {
    */
   function php_sort($row1, $row2) {
     $factor = strtoupper($this->options['order']) == 'ASC' ? 1 : -1;
-    $result = (int)call_user_func($this->php_sort_function, $this->view, $this, &$this->php_static_variable, $row1, $row2);
+    $result = (int)call_user_func($this->php_sort_function, $this->view, $this, $this->php_static_variable, $row1, $row2);
     return $factor * $result;
   }
 }

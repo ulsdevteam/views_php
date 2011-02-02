@@ -15,6 +15,8 @@ class views_php_handler_field extends views_handler_field {
   const CLICK_SORT_NAT_CASE = 5;
   const CLICK_SORT_PHP = 6;
 
+  protected $php_static_variable = NULL;
+
   /**
    * Implements views_object#option_definition().
    */
@@ -115,7 +117,7 @@ class views_php_handler_field extends views_handler_field {
     if (!empty($this->options['php_setup'])) {
       $lamda_function = create_function('$view, $handler, &$static', $this->options['php_setup']);
       ob_start();
-      $lamda_function($this->view, $this, &$this->php_static_variable);
+      $lamda_function($this->view, $this, $this->php_static_variable);
       ob_end_clean();
     }
   }
@@ -170,7 +172,7 @@ class views_php_handler_field extends views_handler_field {
     $factor = strtoupper($this->php_click_sort_order) == 'ASC' ? 1 : -1;
     if ($this->options['php_click_sortable'] == self::CLICK_SORT_PHP) {
       ob_start();
-      $result = (int)call_user_func($this->php_click_sort_function, $this->view, $this, &$this->php_static_variable, $row1, $row2);
+      $result = (int)call_user_func($this->php_click_sort_function, $this->view, $this, $this->php_static_variable, $row1, $row2);
       ob_end_clean();
     }
     else {
@@ -208,7 +210,7 @@ class views_php_handler_field extends views_handler_field {
 
       $lamda_function = $this->php_output_lamda_function;
       ob_start();
-      $lamda_function($this->view, $this, &$this->php_static_variable, $normalized_row, $values, isset($values->{$this->field_alias}) ? $values->{$this->field_alias} : NULL);
+      $lamda_function($this->view, $this, $this->php_static_variable, $normalized_row, $values, isset($values->{$this->field_alias}) ? $values->{$this->field_alias} : NULL);
       $value = ob_get_clean();
     }
     else {

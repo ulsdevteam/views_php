@@ -8,6 +8,8 @@
  */
 class views_php_handler_filter extends views_handler_filter {
 
+  protected $php_static_variable = NULL;
+
   /**
    * Implements views_handler#can_expose().
    */
@@ -66,7 +68,7 @@ class views_php_handler_filter extends views_handler_filter {
     if (!empty($this->options['php_setup'])) {
       $lamda_function = create_function('$view, $handler, &$static', $this->options['php_setup']);
       ob_start();
-      $lamda_function($this->view, $this, &$this->php_static_variable);
+      $lamda_function($this->view, $this, $this->php_static_variable);
       ob_end_clean();
     }
   }
@@ -85,7 +87,7 @@ class views_php_handler_filter extends views_handler_filter {
         foreach ($this->view->display_handler->get_handlers('field') as $field => $handler) {
           $normalized_row->$field = isset($row->{$handler->field_alias}) ? $row->{$handler->field_alias} : NULL;
         }
-        if ($lamda_function($this->view, $this, &$this->php_static_variable, $normalized_row, $row)) {
+        if ($lamda_function($this->view, $this, $this->php_static_variable, $normalized_row, $row)) {
           unset($this->view->result[$i]);
         }
       }
