@@ -39,17 +39,17 @@ class views_php_handler_field extends views_handler_field {
 
     $form += views_php_form_element($this,
       array('use_php_setup', t('Use setup code'), t('If checked, you can provide PHP code to be run once right before execution of the view. This may be useful to define functions to be re-used in the value and/or output code.')),
-      array('php_setup', t('Setup code'), t('Code to run right before execution of the view.'), false),
+      array('php_setup', t('Setup code'), t('Code to run right before execution of the view.'), FALSE),
       array('$view', '$handler', '$static')
     );
     $form += views_php_form_element($this,
       FALSE,
-      array('php_value', t('Value code'), t('Code to construct the value of this field.'), false),
+      array('php_value', t('Value code'), t('Code to construct the value of this field.'), FALSE),
       array('$view', '$handler', '$static', '$row', '$data')
     );
     $form += views_php_form_element($this,
       array('use_php_click_sortable', t('Enable click sort'), t('If checked, you can use PHP code to enable click sort on the field.')),
-      array('php_click_sortable', t('Click sort code'), t('The comparison code must return an integer less than, equal to, or greater than zero if the first row should respectively appear before, stay where it was compared to, or appear after the second row.'), false),
+      array('php_click_sortable', t('Click sort code'), t('The comparison code must return an integer less than, equal to, or greater than zero if the first row should respectively appear before, stay where it was compared to, or appear after the second row.'), FALSE),
       array(
         '$view', '$handler', '$static',
         '$row1' => t('Data of row.'),
@@ -74,7 +74,7 @@ class views_php_handler_field extends views_handler_field {
     );
     $form += views_php_form_element($this,
       FALSE,
-      array('php_output', t('Output code'), t('Code to construct the output of this field.'), true),
+      array('php_output', t('Output code'), t('Code to construct the output of this field.'), TRUE),
       array('$view', '$handler', '$static', '$row', '$data', '$value' => t('Value of this field.'))
     );
   }
@@ -115,7 +115,7 @@ class views_php_handler_field extends views_handler_field {
   function php_pre_execute() {
     // Ecexute static PHP code.
     if (!empty($this->options['php_setup'])) {
-      $lamda_function = create_function('$view, $handler, &$static', $this->options['php_setup']);
+      $lamda_function = create_function('$view, $handler, &$static', $this->options['php_setup'] . ';');
       ob_start();
       $lamda_function($this->view, $this, $this->php_static_variable);
       ob_end_clean();
@@ -129,7 +129,7 @@ class views_php_handler_field extends views_handler_field {
   function php_post_execute() {
     // Ecexute value PHP code.
     if (!empty($this->options['php_value'])) {
-      $lamda_function = create_function('$view, $handler, &$static, $row, $data', $this->options['php_value']);
+      $lamda_function = create_function('$view, $handler, &$static, $row, $data', $this->options['php_value'] . ';');
       ob_start();
       foreach ($this->view->result as $i => &$row) {
         $normalized_row = new stdClass;
@@ -145,7 +145,7 @@ class views_php_handler_field extends views_handler_field {
     if (!empty($this->options['use_php_click_sortable']) && !empty($this->php_click_sort_order)) {
       if ($this->options['use_php_click_sortable'] == self::CLICK_SORT_PHP) {
         if (!empty($this->options['php_click_sortable'])) {
-          $this->php_click_sort_function = create_function('$view, $handler, &$static, $row1, $row2', $this->options['php_click_sortable']);
+          $this->php_click_sort_function = create_function('$view, $handler, &$static, $row1, $row2', $this->options['php_click_sortable'] . ';');
         }
       }
       else {

@@ -28,7 +28,7 @@ function views_php_check_access($php_access, $view_name, $display_id, $account =
   }
 
   if (!isset($lamda_function[$view_name . ':' . $display_id])) {
-    $lamda_function[$view_name . ':' . $display_id] = create_function('$view_name, $display_id, $account', $php_access);
+    $lamda_function[$view_name . ':' . $display_id] = create_function('$view_name, $display_id, $account', $php_access . ';');
   }
 
   ob_start();

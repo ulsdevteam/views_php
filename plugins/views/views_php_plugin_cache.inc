@@ -34,12 +34,12 @@ class views_php_plugin_cache extends views_plugin_cache {
 
     $form += views_php_form_element($this,
       FALSE,
-      array('php_cache_results', t('Result cache code'), t('The code must return TRUE if the cache is still fresh, FALSE otherwise.'), false),
+      array('php_cache_results', t('Result cache code'), t('The code must return TRUE if the cache is still fresh, FALSE otherwise.'), FALSE),
       array('$view', '$plugin', '$cache')
     );
     $form += views_php_form_element($this,
       FALSE,
-      array('php_cache_output', t('Output cache code'), t('The code must return TRUE if the cache is still fresh, FALSE otherwise.'), false),
+      array('php_cache_output', t('Output cache code'), t('The code must return TRUE if the cache is still fresh, FALSE otherwise.'), FALSE),
       array('$view', '$plugin', '$cache')
     );
   }
@@ -57,7 +57,7 @@ class views_php_plugin_cache extends views_plugin_cache {
         $cache = cache_get($this->get_results_key(), $this->table);
         $fresh = !empty($cache);
         if ($fresh && !empty($this->options['php_cache_results'])) {
-          $lamda_function = create_function('$view, $plugin, $cache', $this->options['php_cache_results']);
+          $lamda_function = create_function('$view, $plugin, $cache', $this->options['php_cache_results'] . ';');
           ob_start();
           $fresh = $lamda_function($this->view, $this, $cache);
           ob_end_clean();
@@ -78,7 +78,7 @@ class views_php_plugin_cache extends views_plugin_cache {
         $cache = cache_get($this->get_output_key(), $this->table);
         $fresh = !empty($cache);
         if ($fresh && !empty($this->options['php_cache_output'])) {
-          $lamda_function = create_function('$view, $plugin, $cache', $this->options['php_cache_output']);
+          $lamda_function = create_function('$view, $plugin, $cache', $this->options['php_cache_output'] . ';');
           ob_start();
           $fresh = $lamda_function($this->view, $this, $cache);
           ob_end_clean();

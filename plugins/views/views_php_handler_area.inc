@@ -25,7 +25,7 @@ class views_php_handler_area extends views_handler_area {
 
     $form += views_php_form_element($this,
       FALSE,
-      array('php_output', t('Output code'), t('Code to construct the output of this area.'), true),
+      array('php_output', t('Output code'), t('Code to construct the output of this area.'), TRUE),
       array('$view', '$handler', '$results')
     );
   }

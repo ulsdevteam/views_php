@@ -29,12 +29,12 @@ class views_php_handler_sort extends views_handler_sort {
 
     $form += views_php_form_element($this,
       array('use_php_setup', t('Use setup code'), t('If checked, you can provide PHP code to be run once right before execution of the view. This may be useful to define functions to be re-used in the value and/or output code.')),
-      array('php_setup', t('Setup code'), t('Code to run right before execution of the view.'), false),
+      array('php_setup', t('Setup code'), t('Code to run right before execution of the view.'), FALSE),
       array('$view', '$handler', '$static')
     );
     $form += views_php_form_element($this,
       FALSE,
-      array('php_sort', t('Sort code'), t('The comparison code must return an integer less than, equal to, or greater than zero if the first row should respectively appear before, stay where it was compared to, or appear after the second row.'), false),
+      array('php_sort', t('Sort code'), t('The comparison code must return an integer less than, equal to, or greater than zero if the first row should respectively appear before, stay where it was compared to, or appear after the second row.'), FALSE),
       array(
         '$view', '$handler', '$static',
         '$row1' => t('Data of row.'),
@@ -58,7 +58,7 @@ class views_php_handler_sort extends views_handler_sort {
   function php_pre_execute() {
     // Ecexute static PHP code.
     if (!empty($this->options['php_setup'])) {
-      $lamda_function = create_function('$view, $handler, &$static', $this->options['php_setup']);
+      $lamda_function = create_function('$view, $handler, &$static', $this->options['php_setup'] . ';');
       ob_start();
       $lamda_function($this->view, $this, $this->php_static_variable);
       ob_end_clean();
@@ -71,7 +71,7 @@ class views_php_handler_sort extends views_handler_sort {
    */
   function php_post_execute() {
     if (!empty($this->options['php_sort']) && $this->view->style_plugin->build_sort()) {
-      $this->php_sort_function = create_function('$view, $handler, &$static, $row1, $row2', $this->options['php_sort']);
+      $this->php_sort_function = create_function('$view, $handler, &$static, $row1, $row2', $this->options['php_sort'] . ';');
       ob_start();
       usort($this->view->result, array($this, 'php_sort'));
       ob_end_clean();
