@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * Caching plugin that provides cache control based on custom PHP code.

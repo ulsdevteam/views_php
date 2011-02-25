@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * A handler to sort a view using PHP defined by the administrator.

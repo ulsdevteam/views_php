@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * A handler to provide an area that is constructed by the administrator using PHP.

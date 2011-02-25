@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * A (fake) pager plugin that wraps around the actual pager.

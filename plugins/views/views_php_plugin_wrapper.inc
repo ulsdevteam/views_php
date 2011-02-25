@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * A helper class that wraps around the actual views plugin.
