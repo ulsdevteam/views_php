@@ -114,9 +114,9 @@ class views_php_handler_field extends views_handler_field {
   function php_pre_execute() {
     // Ecexute static PHP code.
     if (!empty($this->options['php_setup'])) {
-      $lamda_function = create_function('$view, $handler, &$static', $this->options['php_setup'] . ';');
+      $function = create_function('$view, $handler, &$static', $this->options['php_setup'] . ';');
       ob_start();
-      $lamda_function($this->view, $this, $this->php_static_variable);
+      $function($this->view, $this, $this->php_static_variable);
       ob_end_clean();
     }
   }
@@ -128,14 +128,14 @@ class views_php_handler_field extends views_handler_field {
   function php_post_execute() {
     // Ecexute value PHP code.
     if (!empty($this->options['php_value'])) {
-      $lamda_function = create_function('$view, $handler, &$static, $row, $data', $this->options['php_value'] . ';');
+      $function = create_function('$view, $handler, &$static, $row, $data', $this->options['php_value'] . ';');
       ob_start();
       foreach ($this->view->result as $i => &$row) {
         $normalized_row = new stdClass;
         foreach ($this->view->display_handler->get_handlers('field') as $field => $handler) {
           $normalized_row->$field = isset($row->{$handler->field_alias}) ? $row->{$handler->field_alias} : NULL;
         }
-        $row->{$this->field_alias} = $lamda_function($this->view, $this, $this->php_static_variable, $normalized_row, $row);
+        $row->{$this->field_alias} = $function($this->view, $this, $this->php_static_variable, $normalized_row, $row);
       }
       ob_end_clean();
     }
@@ -169,13 +169,14 @@ class views_php_handler_field extends views_handler_field {
    */
   function php_click_sort($row1, $row2) {
     $factor = strtoupper($this->php_click_sort_order) == 'ASC' ? 1 : -1;
+    $function = $this->php_click_sort_function;
     if ($this->options['php_click_sortable'] == self::CLICK_SORT_PHP) {
       ob_start();
-      $result = (int)call_user_func($this->php_click_sort_function, $this->view, $this, $this->php_static_variable, $row1, $row2);
+      $result = (int)$function($this->view, $this, $this->php_static_variable, $row1, $row2);
       ob_end_clean();
     }
     else {
-      $result = call_user_func($this->function, $row1->{$this->field_alias}, $row2->{$this->field_alias});
+      $result = $function($row1->{$this->field_alias}, $row2->{$this->field_alias});
     }
     return $factor * $result;
   }
@@ -207,9 +208,9 @@ class views_php_handler_field extends views_handler_field {
         $normalized_row->$field = isset($values->{$handler->field_alias}) ? $values->{$handler->field_alias} : NULL;
       }
 
-      $lamda_function = $this->php_output_lamda_function;
+      $function = $this->php_output_lamda_function;
       ob_start();
-      $lamda_function($this->view, $this, $this->php_static_variable, $normalized_row, $values, isset($values->{$this->field_alias}) ? $values->{$this->field_alias} : NULL);
+      $function($this->view, $this, $this->php_static_variable, $normalized_row, $values, isset($values->{$this->field_alias}) ? $values->{$this->field_alias} : NULL);
       $value = ob_get_clean();
     }
     else {

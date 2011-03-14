@@ -20,18 +20,18 @@ function views_php_views_api() {
  */
 function views_php_check_access($php_access, $view_name, $display_id, $account = NULL) {
   global $user;
-  static $lamda_function = array();
+  static $function = array();
 
   if (!isset($account)) {
     $account = $user;
   }
 
-  if (!isset($lamda_function[$view_name . ':' . $display_id])) {
-    $lamda_function[$view_name . ':' . $display_id] = create_function('$view_name, $display_id, $account', $php_access . ';');
+  if (!isset($function[$view_name . ':' . $display_id])) {
+    $function[$view_name . ':' . $display_id] = create_function('$view_name, $display_id, $account', $php_access . ';');
   }
 
   ob_start();
-  $access = (bool) $lamda_function[$view_name . ':' . $display_id]($view_name, $display_id, $account);
+  $access = (bool) $function[$view_name . ':' . $display_id]($view_name, $display_id, $account);
   ob_end_clean();
   return $access;
 }
