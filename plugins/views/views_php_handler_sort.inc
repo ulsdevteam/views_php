@@ -83,7 +83,13 @@ class views_php_handler_sort extends views_handler_sort {
   function php_sort($row1, $row2) {
     $factor = strtoupper($this->options['order']) == 'ASC' ? 1 : -1;
     $function = $this->php_sort_function;
-    $result = (int)$function($this->view, $this, $this->php_static_variable, $row1, $row2);
+    foreach (array('row1' => 'normalized_row1', 'row2' => 'normalized_row2') as $name => $normalized_name) {
+      $$normalized_name = new stdClass;
+      foreach ($this->view->display_handler->get_handlers('field') as $field => $handler) {
+        $$normalized_name->$field = isset($$name->{$handler->field_alias}) ? $$name->{$handler->field_alias} : NULL;
+      }
+    }
+    $result = (int)$function($this->view, $this, $this->php_static_variable, $normalized_row1, $normalized_row2);
     return $factor * $result;
   }
 }

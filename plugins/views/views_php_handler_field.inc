@@ -170,9 +170,15 @@ class views_php_handler_field extends views_handler_field {
   function php_click_sort($row1, $row2) {
     $factor = strtoupper($this->php_click_sort_order) == 'ASC' ? 1 : -1;
     $function = $this->php_click_sort_function;
-    if ($this->options['php_click_sortable'] == self::CLICK_SORT_PHP) {
+    if ($this->options['use_php_click_sortable'] == self::CLICK_SORT_PHP) {
+      foreach (array('row1' => 'normalized_row1', 'row2' => 'normalized_row2') as $name => $normalized_name) {
+        $$normalized_name = new stdClass;
+        foreach ($this->view->display_handler->get_handlers('field') as $field => $handler) {
+          $$normalized_name->$field = isset($$name->{$handler->field_alias}) ? $$name->{$handler->field_alias} : NULL;
+        }
+      }
       ob_start();
-      $result = (int)$function($this->view, $this, $this->php_static_variable, $row1, $row2);
+      $result = (int)$function($this->view, $this, $this->php_static_variable, $normalized_row1, $normalized_row2);
       ob_end_clean();
     }
     else {
