@@ -65,9 +65,9 @@ class views_php_handler_filter extends views_handler_filter {
   function php_pre_execute() {
     // Ecexute static PHP code.
     if (!empty($this->options['php_setup'])) {
-      $function = create_function('$view, $handler, &$static', $this->options['php_setup']);
+      $function = create_function('$view, $handler, &$static', $this->options['php_setup'] . ';');
       ob_start();
-      $function($this->view, $this, $this->php_static_variable . ';');
+      $function($this->view, $this, $this->php_static_variable);
       ob_end_clean();
     }
   }
