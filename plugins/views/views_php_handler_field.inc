@@ -94,7 +94,7 @@ class views_php_handler_field extends views_handler_field {
    * Implements views_handler_field#click_sortable().
    */
   function click_sortable() {
-    return !empty($this->options['php_click_sortable']);
+    return $this->options['use_php_click_sortable'] != self::CLICK_SORT_DISABLED;
   }
 
   /**
@@ -155,7 +155,7 @@ class views_php_handler_field extends views_handler_field {
           self::CLICK_SORT_NAT => 'strnatcasecmp',
           self::CLICK_SORT_NAT_CASE => 'strnatcmp',
         );
-        $this->php_click_sort_function = $predefined[$this->options['php_click_sortable']];
+        $this->php_click_sort_function = $predefined[$this->options['use_php_click_sortable']];
       }
 
       if (isset($this->php_click_sort_function)) {
