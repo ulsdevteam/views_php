@@ -15,6 +15,19 @@ function views_php_views_api() {
 }
 
 /**
+ * Implementation of hook_permission().
+ */
+function views_php_permission() {
+  return array(
+    'use PHP in Views' => array(
+      'title' => t('Use PHP in Views'),
+      'description' => t('Allows a user to use PHP to create fields, filters, etc.'),
+    ),
+  );
+}
+
+
+/**
  * Menu access callback function; use PHP code to determine whether a user as
  * access.
  */
@@ -87,7 +100,7 @@ function views_php_form_element($handler, $checkbox = FALSE, $input, $variables 
       . '</strong>',
   );
   // Only users with use PHP permission can set/modify input.
-  if (!user_access('use PHP for settings')) {
+  if (!user_access('use PHP in Views')) {
     $container[$name]['#disabled'] = TRUE;
     $container[$name]['#value'] = $container[$name]['#default_value'];
     $container[$name]['#description'] .= ' <strong>' . t('You do not have permission to modify this.') . '</strong>';
